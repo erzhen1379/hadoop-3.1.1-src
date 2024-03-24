@@ -1,0 +1,8 @@
+org.apache.hadoop.fs.s3a
+org.apache.hadoop.fs.s3a.auth
+org.apache.hadoop.fs.s3a.commit
+org.apache.hadoop.fs.s3a.commit.files
+org.apache.hadoop.fs.s3a.commit.magic
+org.apache.hadoop.fs.s3a.commit.staging
+org.apache.hadoop.fs.s3a.s3guard
+org.apache.hadoop.fs.s3native
