@@ -14,24 +14,28 @@ public class HdfsOpTest {
         //链接集群NameNode地址
         URI uri = null;
         try {
-            uri = new URI("hdfs://59.111.211.46:9000");
+            uri = new URI("hdfs://127.0.0.1:9000");
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
         //创建一个配置文件
-        Configuration configuration = new Configuration();
+        //    Configuration configuration = new Configuration();
 //        设置集群副本数量为2
 //        configuration.set("dfs.replication","2");
         //创建一个用户
-        String user = "root";
-        FileSystem fs = FileSystem.get(uri, configuration, user);
-        //进入当前方法
-     //   FSDataOutputStream fos = fs.create(new Path("/useqr111ww2.txt"));
-      //  fos.write("hello worldafafafaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ".getBytes());
+        String user = "hadoop";
+        FileSystem fs = FileSystem.get(uri, new Configuration(), user);
+        for (int i=0;i<1000000;i++){
+            String str="/press/hadoop_5_"+i;
+            FSDataOutputStream fos = fs.create(new Path(str));
+            fos.write("hello worldafaf".getBytes());
+        }
+
+
 
 
         //去取一个文件到本地
-        fs.copyToLocalFile(new Path("/hadoop-3.1.1.tar.gz"), new Path("/tmp/"));
+        //  fs.copyToLocalFile(new Path("/hadoop-3.1.1.tar.gz"), new Path("/tmp/"));
         fs.close();
     }
 }

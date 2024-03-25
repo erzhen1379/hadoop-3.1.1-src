@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 public class HdfsPressThread implements Runnable {
     //链接集群NameNode地址
     Path path = new Path("/");
-    URI uri = new URI("hdfs://59.111.211.47:9000");
+    URI uri = new URI("hdfs://127.0.0.1:9000");
     private CountDownLatch countDownLatch;
 
     public HdfsPressThread(int i, CountDownLatch countDownLatch) throws Exception {
@@ -29,7 +29,7 @@ public class HdfsPressThread implements Runnable {
         long startTime = System.currentTimeMillis();
         //创建一个线程池
         ExecutorService executorService = Executors.newCachedThreadPool();
-        final int count = 500;
+        final int count = 50;
         //与countDownLatch.await();实现运行完所有线程之后才执行后面的操作
         CountDownLatch countDownLatch = new CountDownLatch(count);
 

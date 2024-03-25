@@ -868,7 +868,7 @@ public class TestBPOfferService {
 
   @Test
   public void testRefreshNameNodes() throws Exception {
-
+//todo 查看当前方法
     BPOfferService bpos = setupBPOSForNNs(mockDn, mockNN1, mockNN2);
 
     bpos.start();
