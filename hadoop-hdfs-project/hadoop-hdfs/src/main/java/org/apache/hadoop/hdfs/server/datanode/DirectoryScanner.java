@@ -229,7 +229,7 @@ public class DirectoryScanner implements Runnable {
     scanPeriodMsecs = interval * MILLIS_PER_SECOND; //msec
   //dfs.datanode.directoryscan.throttle.limit.ms.per.sec=1000
     int throttle =
-        conf.getInt(
+        conf.getInt(   //限制每个线程使用CPU时间
           DFSConfigKeys.DFS_DATANODE_DIRECTORYSCAN_THROTTLE_LIMIT_MS_PER_SEC_KEY,
           DFSConfigKeys.DFS_DATANODE_DIRECTORYSCAN_THROTTLE_LIMIT_MS_PER_SEC_DEFAULT);
 
@@ -252,6 +252,7 @@ public class DirectoryScanner implements Runnable {
       throttleLimitMsPerSec = throttle;
     }
     //dfs.datanode.directoryscan.threads=1
+    //线程池中thread数量
     int threads = 
         conf.getInt(DFSConfigKeys.DFS_DATANODE_DIRECTORYSCAN_THREADS_KEY,
                     DFSConfigKeys.DFS_DATANODE_DIRECTORYSCAN_THREADS_DEFAULT);
@@ -318,7 +319,7 @@ public class DirectoryScanner implements Runnable {
         return;
       }
 
-      //We're are okay to run - do it
+      //todo进入当前方法  We're are okay to run - do it
       reconcile();      
       
     } catch (Exception e) {
@@ -383,7 +384,7 @@ public class DirectoryScanner implements Runnable {
       LinkedList<ScanInfo> diff = entry.getValue();
       
       for (ScanInfo info : diff) {
-        //todo
+        //todo dataset中进行更新
         dataset.checkAndUpdate(bpid, info);
       }
     }

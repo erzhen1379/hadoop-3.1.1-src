@@ -126,7 +126,7 @@ class BPServiceActor implements Runnable {
     this.initialRegistrationComplete = lifelineNnAddr != null ?
         new CountDownLatch(1) : null;
     this.dnConf = dn.getDnConf();
-    this.ibrManager = new IncrementalBlockReportManager(
+    this.ibrManager = new IncrementalBlockReportManager(   //此处初始化增量上报类
         dnConf.ibrInterval,
         dn.getMetrics());
     prevBlockReportId = ThreadLocalRandom.current().nextLong();

@@ -407,6 +407,7 @@ class BPOfferService {
         try {
           //第一个nn的响应，这时我们已经知道命名空间id，就可以通过调用initBlockPool（）初始化dn的本地存储了,
           //设置一些存储id这些
+          //todo 磁盘扫描
           dn.initBlockPool(this);
           success = true;
         } finally {

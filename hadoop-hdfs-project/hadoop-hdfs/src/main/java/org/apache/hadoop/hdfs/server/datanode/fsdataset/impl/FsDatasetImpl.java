@@ -2314,6 +2314,17 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
    * the disk, update {@link ReplicaInfo} with the correct file</li>
    * </ul>
    *
+   * 处理磁盘上的块和卷映射中的块之间的差异
+   * 检查给定block的差异性.
+   * 检查内存和磁盘中block的差异性:
+   * 1. 如果block文件丢失, 删除内存中的信息.
+   * 2. 如果block文件存在,内存中不存在,更新内存中的信息
+   * 3. 如果时间戳不匹配,使用正确的时间戳
+   * 4. 如果如果内存中的block大小跟实际的blokck大小不一致,标记这个block为损坏,更新内存中的block
+   * 5. 如果内存中的block和磁盘中的block不匹配,更新内存中的block文件
+   *
+   *
+   *
    * @param bpid block pool ID
    * @param scanInfo {@link ScanInfo} for a given block
    */
@@ -2328,27 +2339,33 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
 
     Block corruptBlock = null;
     ReplicaInfo memBlockInfo;
+    // 获取lock
     try (AutoCloseableLock lock = datasetLock.acquire()) {
+      //获取内存block信息
       memBlockInfo = volumeMap.get(bpid, blockId);
+      // block正在持久化中, 忽略不同信息
       if (memBlockInfo != null &&
           memBlockInfo.getState() != ReplicaState.FINALIZED) {
-        // Block is not finalized - ignore the difference
+        // Block is not finalized - ignore the difference，此时只扫描状态为FINALIZED状态
         return;
       }
-
+      // 验证磁盘元数据是否存在
       final FileIoProvider fileIoProvider = datanode.getFileIoProvider();
+      //校验文件是否存储
       final boolean diskMetaFileExists = diskMetaFile != null &&
           fileIoProvider.exists(vol, diskMetaFile);
+      //文件是否存在
       final boolean diskFileExists = diskFile != null &&
           fileIoProvider.exists(vol, diskFile);
-
+     // 对比时间戳
       final long diskGS = diskMetaFileExists ?
           Block.getGenerationStamp(diskMetaFile.getName()) :
           HdfsConstants.GRANDFATHER_GENERATION_STAMP;
-
+      //外部存储?? 略过...
       if (vol.getStorageType() == StorageType.PROVIDED) {
         if (memBlockInfo == null) {
           // replica exists on provided store but not in memory
+          //副本存在磁盘中，但是不在内存中
           ReplicaInfo diskBlockInfo =
               new ReplicaBuilder(ReplicaState.FINALIZED)
               .setFileRegion(scanInfo.getFileRegion())
@@ -2365,20 +2382,24 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
         }
         return;
       }
-
+      // 如果磁盘文件不存在
       if (!diskFileExists) {
+        //如果元数据为空
         if (memBlockInfo == null) {
           // Block file does not exist and block does not exist in memory
           // If metadata file exists then delete it
+          // block文件不存在, 内存中不存在, 但是有原信息文件存在,则删除.
           if (diskMetaFileExists && fileIoProvider.delete(vol, diskMetaFile)) {
             LOG.warn("Deleted a metadata file without a block "
                 + diskMetaFile.getAbsolutePath());
           }
           return;
         }
+        //如果元信息文件不存在
         if (!memBlockInfo.blockDataExists()) {
           // Block is in memory and not on the disk
           // Remove the block from volumeMap
+          // block在内存中,但是不在磁盘中, 从内存中清理到元信息.
           volumeMap.remove(bpid, blockId);
           if (vol.isTransientStorage()) {
             ramDiskReplicaTracker.discardReplica(bpid, blockId, true);
@@ -2386,6 +2407,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
           LOG.warn("Removed block " + blockId
               + " from memory with missing block file on the disk");
           // Finally remove the metadata file
+          // 最后移除元信息文件
           if (diskMetaFileExists && fileIoProvider.delete(vol, diskMetaFile)) {
             LOG.warn("Deleted a metadata file for the deleted block "
                 + diskMetaFile.getAbsolutePath());
@@ -2395,9 +2417,12 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
       }
       /*
        * Block file exists on the disk
+       * block文件存在于disk
        */
       if (memBlockInfo == null) {
         // Block is missing in memory - add the block to volumeMap
+        // 内存中的block信息丢失, 向内存中添加block信息.
+        //构造内存对象
         ReplicaInfo diskBlockInfo = new ReplicaBuilder(ReplicaState.FINALIZED)
             .setBlockId(blockId)
             .setLength(diskFile.length())
@@ -2405,6 +2430,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
             .setFsVolume(vol)
             .setDirectoryToUse(diskFile.getParentFile())
             .build();
+        //更新内存信息
         volumeMap.add(bpid, diskBlockInfo);
         if (vol.isTransientStorage()) {
           long lockedBytesReserved =
@@ -2418,8 +2444,9 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
       }
       /*
        * Block exists in volumeMap and the block file exists on the disk
+       * block 在内存和磁盘中都存在
        */
-      // Compare block files
+      // Compare block files 对比block文件
       if (memBlockInfo.blockDataExists()) {
         if (memBlockInfo.getBlockURI().compareTo(diskFile.toURI()) != 0) {
           if (diskMetaFileExists) {

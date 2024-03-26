@@ -143,7 +143,7 @@ class IncrementalBlockReportManager {
   IncrementalBlockReportManager(
       final long ibrInterval,
       final DataNodeMetrics dnMetrics) {
-    this.ibrInterval = ibrInterval;
+    this.ibrInterval = ibrInterval;  //增量上报间隔
     this.lastIBR = monotonicNow() - ibrInterval;
     this.dnMetrics = dnMetrics;
   }
@@ -152,6 +152,10 @@ class IncrementalBlockReportManager {
     return readyToSend && monotonicNow() - ibrInterval >= lastIBR;
   }
 
+  /**
+   * 等待全量上报
+   * @param waitTime
+   */
   synchronized void waitTillNextIBR(long waitTime) {
     if (waitTime > 0 && !sendImmediately()) {
       try {

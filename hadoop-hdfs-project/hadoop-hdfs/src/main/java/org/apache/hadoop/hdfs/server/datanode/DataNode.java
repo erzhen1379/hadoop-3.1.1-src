@@ -1078,14 +1078,14 @@ public class DataNode extends ReconfigurableBase
     if (directoryScanner != null) {
       return;
     }
-    String reason = null;
+    String reason = null;  //dfs.datanode.directoryscan.interval 6小时扫描
     if (conf.getTimeDuration(DFS_DATANODE_DIRECTORYSCAN_INTERVAL_KEY,
         DFS_DATANODE_DIRECTORYSCAN_INTERVAL_DEFAULT, TimeUnit.SECONDS) < 0) {
       reason = "verification is turned off by configuration";
     } else if ("SimulatedFSDataset".equals(data.getClass().getSimpleName())) {
       reason = "verifcation is not supported by SimulatedFSDataset";
     } 
-    if (reason == null) {
+    if (reason == null) {  //此处初始化DirectoryScanner类
       directoryScanner = new DirectoryScanner(this, data, conf);
       directoryScanner.start();
     } else {
@@ -1680,12 +1680,12 @@ public class DataNode extends ReconfigurableBase
     initStorage(nsInfo);
 
     // Exclude failed disks before initializing the block pools to avoid startup
-    // failures.
+    // failures.  检查磁盘
     checkDiskError();
 
     data.addBlockPool(nsInfo.getBlockPoolID(), getConf());
     blockScanner.enableBlockPoolId(bpos.getBlockPoolId());
-    //todo
+    //todo 初始化磁盘扫描
     initDirectoryScanner(getConf());
     //todo
     initDiskBalancer(data, getConf());
