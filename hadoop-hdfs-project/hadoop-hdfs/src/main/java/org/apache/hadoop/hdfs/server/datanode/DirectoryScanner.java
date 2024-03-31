@@ -384,7 +384,7 @@ public class DirectoryScanner implements Runnable {
       LinkedList<ScanInfo> diff = entry.getValue();
       
       for (ScanInfo info : diff) {
-        //todo dataset中进行更新
+        //todo dataset中进行更新,完成同步
         dataset.checkAndUpdate(bpid, info);
       }
     }

@@ -103,15 +103,18 @@ public abstract class Storage extends StorageInfo {
    * releases.
    */
   public static final String STORAGE_1_BBW = "blocksBeingWritten";
-  
+
+  /**
+   * 定义存储空间存储的状态
+   */
   public enum StorageState {
-    NON_EXISTENT,
-    NOT_FORMATTED,
-    COMPLETE_UPGRADE,
-    RECOVER_UPGRADE,
-    COMPLETE_FINALIZE,
+    NON_EXISTENT,  //非format 选项启动，目录不存在，或者目录不可写
+    NOT_FORMATTED, //以format启动，都为NOT_FORMATTED
+    COMPLETE_UPGRADE, //升级完成状态
+    RECOVER_UPGRADE,  //从升级状态恢复
+    COMPLETE_FINALIZE,  //存储目录可以继续执行提交操作
     COMPLETE_ROLLBACK,
-    RECOVER_ROLLBACK,
+    RECOVER_ROLLBACK,  //回滚操作
     COMPLETE_CHECKPOINT,
     RECOVER_CHECKPOINT,
     NORMAL;
@@ -632,6 +635,7 @@ public abstract class Storage extends StorageInfo {
      * @throws InconsistentFSStateException if directory state is not 
      * consistent and cannot be recovered.
      * @throws IOException
+     * 分析当前节点的存储状态
      */
     public StorageState analyzeStorage(StartupOption startOpt, Storage storage,
         boolean checkCurrentIsEmpty)
@@ -758,7 +762,7 @@ public abstract class Storage extends StorageInfo {
 
     /**
      * Complete or recover storage state from previously failed transition.
-     * 
+     * 进行恢复操作
      * @param curState specifies what/how the state should be recovered
      * @throws IOException
      */
@@ -887,8 +891,9 @@ public abstract class Storage extends StorageInfo {
     @SuppressWarnings("resource")
     FileLock tryLock() throws IOException {
       boolean deletionHookAdded = false;
+      //todo 构造in_use.lock文件
       File lockF = new File(root, STORAGE_FILE_LOCK);
-      if (!lockF.exists()) {
+      if (!lockF.exists()) {  //锁文件构造失败，则退出执行
         lockF.deleteOnExit();
         deletionHookAdded = true;
       }
@@ -896,11 +901,13 @@ public abstract class Storage extends StorageInfo {
       String jvmName = ManagementFactory.getRuntimeMXBean().getName();
       FileLock res = null;
       try {
+        //尝试在锁文件上加锁
         res = file.getChannel().tryLock();
-        if (null == res) {
+        if (null == res) { //已经有程序获得锁，那么直接抛出异常
           LOG.error("Unable to acquire file lock on path {}", lockF);
           throw new OverlappingFileLockException();
         }
+        //加锁成功，在锁文件中写入虚拟机信息
         file.write(jvmName.getBytes(Charsets.UTF_8));
         LOG.info("Lock on {} acquired by nodename {}", lockF, jvmName);
       } catch(OverlappingFileLockException oe) {
@@ -908,12 +915,14 @@ public abstract class Storage extends StorageInfo {
         String lockingJvmName = Path.WINDOWS ? "" : (" " + file.readLine());
         LOG.error("It appears that another node {} has already locked the "
             + "storage directory: {}", lockingJvmName, root, oe);
+        //已经有程序获得锁，则关闭锁文件，返回null
         file.close();
         return null;
       } catch(IOException e) {
         LOG.error("Failed to acquire lock on {}. If this storage directory is"
             + " mounted via NFS, ensure that the appropriate nfs lock services"
             + " are running.", lockF, e);
+        //读取锁文件失败，则关闭锁文件，抛出异常
         file.close();
         throw e;
       }
@@ -921,6 +930,7 @@ public abstract class Storage extends StorageInfo {
         // If the file existed prior to our startup, we didn't
         // call deleteOnExit above. But since we successfully locked
         // the dir, we can take care of cleaning it up.
+        //加锁成功，在虚拟机运行结束后，删除文件
         lockF.deleteOnExit();
       }
       return res;
@@ -928,7 +938,7 @@ public abstract class Storage extends StorageInfo {
 
     /**
      * Unlock storage.
-     * 
+     * 释放锁
      * @throws IOException
      */
     public void unlock() throws IOException {

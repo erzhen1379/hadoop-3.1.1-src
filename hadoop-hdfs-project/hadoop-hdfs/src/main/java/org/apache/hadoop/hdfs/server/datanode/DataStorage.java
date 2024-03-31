@@ -104,6 +104,7 @@ public class DataStorage extends Storage {
   private volatile String datanodeUuid = null;
   
   // Maps block pool IDs to block pool storage
+  //dn上块池存储
   private final Map<String, BlockPoolSliceStorage> bpStorageMap
       = Collections.synchronizedMap(new HashMap<String, BlockPoolSliceStorage>());
 
@@ -264,26 +265,43 @@ public class DataStorage extends Storage {
     }
   }
 
+  /**
+   * 加载一个存储目录。如果需要，从以前的转换中恢复。
+   * @param datanode
+   * @param nsInfo
+   * @param location
+   * @param startOpt
+   * @param callables
+   * @return
+   * @throws IOException
+   */
   private StorageDirectory loadStorageDirectory(DataNode datanode,
       NamespaceInfo nsInfo, StorageLocation location, StartupOption startOpt,
       List<Callable<StorageDirectory>> callables) throws IOException {
+    //实例化
     StorageDirectory sd = new StorageDirectory(null, false, location);
-    try {
+    try {// todo analyzeStorage
+      // 调用analyzeStorage()方法分析当前StorageDirectory的状态
       StorageState curState = sd.analyzeStorage(startOpt, this, true);
       // sd is locked but not opened
+      // 根据curState恢复状态
       switch (curState) {
+        //存储目录状态正常， 不用执行任何操作
       case NORMAL:
         break;
+        //对于不存在的情况， 则直接忽略
       case NON_EXISTENT:
         LOG.info("Storage directory with location {} does not exist", location);
         throw new IOException("Storage directory with location " + location
             + " does not exist");
+        //没有格式化时， 调用format()方法格式化数据目录
       case NOT_FORMATTED: // format
         LOG.info("Storage directory with location {} is not formatted for "
             + "namespace {}. Formatting...", location, nsInfo.getNamespaceID());
         format(sd, nsInfo, datanode.getDatanodeUuid(), datanode.getConf());
         break;
       default:  // recovery part is common
+        //对于其他情况， 则调用StorageDirectory.doRecover()恢复到NORMAL状态
         sd.doRecover(curState);
       }
 
@@ -291,9 +309,11 @@ public class DataStorage extends Storage {
       // Each storage directory is treated individually.
       // During startup some of them can upgrade or roll back
       // while others could be up-to-date for the regular startup.
+      //调用doTransition()执行启动操作， 启动选项通过startOpt参数传递
       if (!doTransition(sd, nsInfo, startOpt, callables, datanode.getConf())) {
 
         // 3. Update successfully loaded storage.
+        //3． 对于每一个成功执行的存储目录， 写入VERSION文件
         setServiceLayoutVersion(getServiceLayoutVersion());
         writeProperties(sd);
       }
@@ -700,10 +720,12 @@ public class DataStorage extends Storage {
    * @param nsInfo  namespace info
    * @param startOpt  startup option
    * @return true if the new properties has been written.
+   * 分析是否需要转换BP状态，必要时执行。
    */
   private boolean doTransition(StorageDirectory sd, NamespaceInfo nsInfo,
       StartupOption startOpt, List<Callable<StorageDirectory>> callables,
       Configuration conf) throws IOException {
+    // 数据来自于外部存储 什么都不做
     if (sd.getStorageLocation().getStorageType() == StorageType.PROVIDED) {
       createStorageID(sd, layoutVersion, conf);
       return false; // regular start up for PROVIDED storage directories
@@ -711,6 +733,7 @@ public class DataStorage extends Storage {
     if (startOpt == StartupOption.ROLLBACK) {
       doRollback(sd, nsInfo); // rollback if applicable
     }
+    //检查升级是否成功
     readProperties(sd);
     checkVersionUpgradable(this.layoutVersion);
     assert this.layoutVersion >= HdfsServerConstants.DATANODE_LAYOUT_VERSION :
@@ -729,6 +752,7 @@ public class DataStorage extends Storage {
     }
     
     // For version that supports federation, validate clusterID
+    // 检测 NamespaceID 是否相等 , 不相等 则报错
     if (federationSupported
         && !getClusterID().equals(nsInfo.getClusterID())) {
       throw new IOException("Incompatible clusterIDs in "
@@ -743,6 +767,7 @@ public class DataStorage extends Storage {
     }
 
     // do upgrade
+    //磁盘版本号小于代码版本号， 则调用doUpgrade()升级
     if (this.layoutVersion > HdfsServerConstants.DATANODE_LAYOUT_VERSION) {
       if (federationSupported) {
         // If the existing on-disk layout version supports federation,

@@ -2488,6 +2488,7 @@ class FsDatasetImpl implements FsDatasetSpi<FsVolumeImpl> {
       }
 
       // Compare generation stamp
+      //如果时间戳不一致
       if (memBlockInfo.getGenerationStamp() != diskGS) {
         File memMetaFile = FsDatasetUtil.getMetaFile(diskFile, 
             memBlockInfo.getGenerationStamp());

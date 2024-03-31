@@ -131,7 +131,10 @@ public interface HdfsServerConstants {
     }
   }
 
-  /** Startup options */
+  /** Startup options
+   *
+   * 启动选项
+   * */
   enum StartupOption{
     FORMAT  ("-format"),
     CLUSTERID ("-clusterid"),

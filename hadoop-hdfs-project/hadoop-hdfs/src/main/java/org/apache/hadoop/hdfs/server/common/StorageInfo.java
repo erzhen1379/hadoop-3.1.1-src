@@ -46,7 +46,7 @@ public class StorageInfo {
   public int   layoutVersion;   // layout version of the storage data
   public int   namespaceID;     // id of the file system
   public String clusterID;      // id of the cluster
-  public long  cTime;           // creation time of the file system state
+  public long  cTime;           // creation time of the file system state 存储系统创建时间
 
   protected final NodeType storageType; // Type of the node using this storage 
   
