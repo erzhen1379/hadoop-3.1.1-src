@@ -2656,6 +2656,7 @@ public abstract class Server {
 
     @Override
     public void run() {
+      //RPC.Server启动后持续监听来自客户端的RPC请求并放入callQueue队列中，handler线程则不断从callQueue中提取RPC请求来执行具体的处理逻辑。
       LOG.debug(Thread.currentThread().getName() + ": starting");
       SERVER.set(Server.this);
       while (running) {
@@ -3060,7 +3061,9 @@ public abstract class Server {
     this.tracer = t;
   }
 
-  /** Starts the service.  Must be called before any calls will be handled. */
+  /** Starts the service.  Must be called before any calls will be handled.
+   * 在初始化时会启动handlerCount个线程来响应RPC连接请求
+   * */
   public synchronized void start() {
     responder.start();
     listener.start();
