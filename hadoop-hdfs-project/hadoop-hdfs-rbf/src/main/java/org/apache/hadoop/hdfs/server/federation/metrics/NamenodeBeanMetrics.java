@@ -77,7 +77,10 @@ public class NamenodeBeanMetrics
   /** Prevent holding the page from loading too long. */
   private static final String DN_REPORT_TIME_OUT =
       RBFConfigKeys.FEDERATION_ROUTER_PREFIX + "dn-report.time-out";
-  /** We only wait for 1 second. */
+  /** We only wait for 1 second.
+   * 上报超时1秒
+   *
+   * */
   private static final long DN_REPORT_TIME_OUT_DEFAULT =
       TimeUnit.SECONDS.toMillis(1);
 
