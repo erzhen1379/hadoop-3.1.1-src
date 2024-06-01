@@ -51,6 +51,7 @@
 
 # The java implementation to use. By default, this environment
 # variable is REQUIRED on ALL platforms except OS X!
+#使用jdk的路径
 # export JAVA_HOME=
 
 # Location of Hadoop.  By default, Hadoop will attempt to determine
@@ -64,7 +65,7 @@
 # NOTE: It is recommend that this variable not be set here but in
 # /etc/profile.d or equivalent.  Some options (such as
 # --config) may react strangely otherwise.
-#
+#配置文件的路径如果$HADOOP_CONF_DIR 没有值时，会赋予默认值/etc/hadoop
 # export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
 
 # The maximum amount of heap to use (Java -Xmx).  If no unit
@@ -72,6 +73,7 @@
 # prefer any Xmx setting in their respective _OPT variable.
 # There is no default; the JVM will autoscale based upon machine
 # memory size.
+#如果不指定大小会默认指定1000MB
 # export HADOOP_HEAPSIZE_MAX=
 
 # The minimum amount of heap to use (Java -Xms).  If no unit
@@ -81,19 +83,23 @@
 # memory size.
 # export HADOOP_HEAPSIZE_MIN=
 
+
 # Enable extra debugging of Hadoop's JAAS binding, used to set up
 # Kerberos security.
+#设置jaas绑定、开启Kerberos 安全认证
 # export HADOOP_JAAS_DEBUG=true
 
 # Extra Java runtime options for all Hadoop commands. We don't support
 # IPv6 yet/still, so by default the preference is set to IPv4.
 # export HADOOP_OPTS="-Djava.net.preferIPv4Stack=true"
 # For Kerberos debugging, an extended option set logs more invormation
+#使用Ipv4禁用Ipv6
 # export HADOOP_OPTS="-Djava.net.preferIPv4Stack=true -Dsun.security.krb5.debug=true -Dsun.security.spnego.debug"
 
 # Some parts of the shell code may do special things dependent upon
 # the operating system.  We have to set this here. See the next
 # section as to why....
+#操作系统
 export HADOOP_OS_TYPE=${HADOOP_OS_TYPE:-$(uname -s)}
 
 
@@ -113,6 +119,7 @@ esac
 # and clients (i.e., hdfs dfs -blah).  These get appended to HADOOP_OPTS for
 # such commands.  In most cases, # this should be left empty and
 # let users supply it on the command line.
+#设置 HADOOP_CLIENT 参数    fs, dfs, fsck,distcp etc 命令涉及
 # export HADOOP_CLIENT_OPTS=""
 
 #
@@ -136,6 +143,7 @@ esac
 # Similarly, end users should utilize ${HOME}/.hadooprc .
 # This variable should ideally only be used as a short-cut,
 # interactive way for temporary additions on the command line.
+#这个环境变量是hadoop执行程序时会查询class的路径
 # export HADOOP_CLASSPATH="/some/cool/path/on/your/machine"
 
 # Should HADOOP_CLASSPATH be first in the official CLASSPATH?
@@ -197,11 +205,13 @@ esac
 # Where (primarily) daemon log files are stored.
 # ${HADOOP_HOME}/logs by default.
 # Java property: hadoop.log.dir
+#配置日志路径
 # export HADOOP_LOG_DIR=${HADOOP_HOME}/logs
 
 # A string representing this instance of hadoop. $USER by default.
 # This is used in writing log and pid files, so keep that in mind!
 # Java property: hadoop.id.str
+#hadoop中的日志文件名中的用户名称部分
 # export HADOOP_IDENT_STRING=$USER
 
 # How many seconds to pause after stopping a daemon
@@ -260,7 +270,7 @@ esac
 # data transfer protocol using non-privileged ports.
 # export JSVC_HOME=/usr/bin
 
-#
+#pid路径
 # This directory contains pids for secure and privileged processes.
 #export HADOOP_SECURE_PID_DIR=${HADOOP_PID_DIR}
 
@@ -283,6 +293,7 @@ esac
 # Default log level and output location for file system related change
 # messages. For non-namenode daemons, the Java property must be set in
 # the appropriate _OPTS if one wants something other than INFO,NullAppender
+#hdfs 审计日志
 # Java property: hdfs.audit.logger
 # export HDFS_AUDIT_LOGGER=INFO,NullAppender
 
@@ -291,6 +302,7 @@ esac
 # and therefore may override any similar flags set in HADOOP_OPTS
 #
 # a) Set JMX options
+#jvm相关
 # export HDFS_NAMENODE_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.port=1026"
 #
 # b) Set garbage collection logs

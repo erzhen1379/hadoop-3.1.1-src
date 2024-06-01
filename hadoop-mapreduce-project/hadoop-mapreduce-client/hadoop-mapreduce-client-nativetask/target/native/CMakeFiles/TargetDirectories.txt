@@ -1,6 +1,0 @@
-/home/hadoop/project/hadoop-3.1.1-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/CMakeFiles/rebuild_cache.dir
-/home/hadoop/project/hadoop-3.1.1-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/CMakeFiles/edit_cache.dir
-/home/hadoop/project/hadoop-3.1.1-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/CMakeFiles/nttest.dir
-/home/hadoop/project/hadoop-3.1.1-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/CMakeFiles/gtest.dir
-/home/hadoop/project/hadoop-3.1.1-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/CMakeFiles/nativetask_static.dir
-/home/hadoop/project/hadoop-3.1.1-src/hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/target/native/CMakeFiles/nativetask.dir

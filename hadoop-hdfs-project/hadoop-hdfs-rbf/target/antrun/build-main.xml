@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="maven-antrun-" default="main"  >
-<target name="main">
-  <copy todir="/home/hadoop/project/hadoop-3.1.1-src/hadoop-hdfs-project/hadoop-hdfs-rbf/target/test-classes/webapps">
-    <fileset dir="/home/hadoop/project/hadoop-3.1.1-src/hadoop-hdfs-project/hadoop-hdfs-rbf/target/webapps">
-      <exclude name="proto-*-web.xml"/>
-      <exclude name="**/proto-web.xml"/>
-    </fileset>
-  </copy>
+<target name="main" if="tar">
+  <echo file="/home/hadoop/project/hadoop-3.1.1-src/hadoop-hdfs-project/hadoop-hdfs-rbf/target/dist-maketar.sh">cd &quot;/home/hadoop/project/hadoop-3.1.1-src/hadoop-hdfs-project/hadoop-hdfs-rbf/target&quot;
+                      tar cf - hadoop-hdfs-rbf-3.1.1 | gzip &gt; hadoop-hdfs-rbf-3.1.1.tar.gz</echo>
+  <exec failonerror="true" dir="/home/hadoop/project/hadoop-3.1.1-src/hadoop-hdfs-project/hadoop-hdfs-rbf/target" executable="bash">
+    <arg line="./dist-maketar.sh"/>
+  </exec>
 </target>
 </project>
