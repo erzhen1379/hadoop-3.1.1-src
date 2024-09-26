@@ -860,6 +860,7 @@ class BPServiceActor implements Runnable {
         }
       }
       //初始化成功，将运行状态设置为RUNNING
+      //
       runningState = RunningState.RUNNING;
       if (initialRegistrationComplete != null) {
         initialRegistrationComplete.countDown();
