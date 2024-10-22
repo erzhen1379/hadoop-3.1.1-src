@@ -58,6 +58,10 @@ public class DU extends CachingGetSpaceUsed {
   }
 
   private final class DUShell extends Shell  {
+    /**
+     * 执行刷新
+     * @throws IOException
+     */
     void startRefresh() throws IOException {
       run();
     }

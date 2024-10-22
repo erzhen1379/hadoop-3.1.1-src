@@ -899,7 +899,7 @@ public abstract class Shell {
     if (Shell.MAC) {
       System.setProperty("jdk.lang.Process.launchMechanism", "POSIX_SPAWN");
     }
-    runCommand();
+    runCommand();  //todo 进入当前方法
   }
 
   /** Run the command. */
@@ -992,7 +992,7 @@ public abstract class Shell {
       throw oe;
     }
     try {
-      parseExecResult(inReader); // parse the output
+      parseExecResult(inReader); // parse the output  todo 进入当前方法
       // clear the input stream buffer
       String line = inReader.readLine();
       while(line != null) {

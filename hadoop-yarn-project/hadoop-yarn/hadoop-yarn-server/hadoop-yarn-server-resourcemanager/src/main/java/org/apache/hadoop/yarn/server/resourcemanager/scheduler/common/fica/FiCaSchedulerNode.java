@@ -164,7 +164,6 @@ public class FiCaSchedulerNode extends SchedulerNode {
   protected synchronized void allocateContainer(RMContainer rmContainer,
       boolean launchedOnNode) {
     super.allocateContainer(rmContainer, launchedOnNode);
-
     final Container container = rmContainer.getContainer();
     LOG.info("Assigned container " + container.getId() + " of capacity "
           + container.getResource() + " on host " + getRMNode().getNodeAddress()

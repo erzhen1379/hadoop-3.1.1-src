@@ -879,6 +879,7 @@ public class ApplicationCLI extends YarnCLI {
         "Application-Type", "User", "Queue", "State", "Final-State",
         "Progress", "Tracking-URL");
     for (ApplicationReport appReport : appsReport) {
+      ApplicationResourceUsageReport applicationResourceUsageReport = appReport.getApplicationResourceUsageReport();
       DecimalFormat formatter = new DecimalFormat("###.##%");
       String progress = formatter.format(appReport.getProgress());
       writer.printf(APPLICATIONS_PATTERN, appReport.getApplicationId(),
