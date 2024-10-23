@@ -839,11 +839,11 @@
 </property>
 
 <property>
-  <name>dfs.namenode.service.handler.count</name>
+  <name></name>
   <value>10</value>
   <description>The number of Namenode RPC server threads that listen to
   requests from DataNodes and from all other non-client nodes.
-  dfs.namenode.service.handler.count will be valid only if
+   will be valid only if
   dfs.namenode.servicerpc-address is configured.
   </description>
 </property>

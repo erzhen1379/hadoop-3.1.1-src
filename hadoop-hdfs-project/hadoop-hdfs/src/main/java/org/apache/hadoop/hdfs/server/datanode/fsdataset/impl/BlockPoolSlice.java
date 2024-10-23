@@ -160,7 +160,7 @@ class BlockPoolSlice {
     this.dfsUsage = new CachingGetSpaceUsed.Builder().setPath(bpDir)
                                                      .setConf(conf)
                                                      .setInitialUsed(loadDfsUsed())
-                                                     .build();
+                                                     .build();  //todo 进入build方法
 
     // Make the dfs usage to be saved during shutdown.
     shutdownHook = new Runnable() {
