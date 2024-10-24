@@ -789,7 +789,7 @@ class BPServiceActor implements Runnable {
         //org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.registerDatanode
         newBpRegistration = bpNamenode.registerDatanode(newBpRegistration);
         //如果执行到这说明注册已经完成
-        LOG.debug("BPserviceActor向nn注册的就行信息："+newBpRegistration.toStringAll());
+        LOG.debug("BPserviceActor向nn注册的就行信息："+newBpRegistration.toString());
         newBpRegistration.setNamespaceInfo(nsInfo);
         bpRegistration = newBpRegistration;
         break;
