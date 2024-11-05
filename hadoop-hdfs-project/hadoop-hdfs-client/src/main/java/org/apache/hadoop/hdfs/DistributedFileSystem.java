@@ -952,6 +952,7 @@ public class DistributedFileSystem extends FileSystem
     return new FileSystemLinkResolver<Boolean>() {
       @Override
       public Boolean doCall(final Path p) throws IOException {
+        //todo 执行删除
         return dfs.delete(getPathName(p), recursive);
       }
       @Override

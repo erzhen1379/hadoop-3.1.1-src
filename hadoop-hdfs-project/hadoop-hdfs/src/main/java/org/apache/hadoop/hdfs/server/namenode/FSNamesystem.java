@@ -3034,12 +3034,13 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     BlocksMapUpdateInfo toRemovedBlocks = null;
     checkOperation(OperationCategory.WRITE);
     final FSPermissionChecker pc = getPermissionChecker();
-    //此处写锁
+    //todo 此处写锁
     writeLock();
     boolean ret = false;
     try {
       checkOperation(OperationCategory.WRITE);
       checkNameNodeSafeMode("Cannot delete " + src);
+      //todo 获得要移除的blocks列表
       toRemovedBlocks = FSDirDeleteOp.delete(
           this, pc, src, recursive, logRetryCache);
       ret = toRemovedBlocks != null;
@@ -3049,8 +3050,10 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     } finally {
       writeUnlock(operationName);
     }
+    //将删除操作记录到editlog中
     getEditLog().logSync();
     if (toRemovedBlocks != null) {
+      //todo 真正删除block地方  进入当前方法
       removeBlocks(toRemovedBlocks); // Incremental deletion of blocks
     }
     logAuditEvent(true, operationName, src);
@@ -3066,7 +3069,8 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
    * From the given list, incrementally remove the blocks from blockManager
    * Writelock is dropped and reacquired every BLOCK_DELETION_INCREMENT to
    * ensure that other waiters on the lock can get in. See HDFS-2938
-   * 
+   * 给定要删除的block的list，从blockManager中增量移除blocks
+   * 写锁会被释放，然后每删除BLOCK_DELETION_INCREMENT个block时再重新获取一次写锁，这样确保其他等待写锁的线程能够得到执行。
    * @param blocks
    *          An instance of {@link BlocksMapUpdateInfo} which contains a list
    *          of blocks that need to be removed from blocksMap
@@ -3077,6 +3081,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     while (iter.hasNext()) {
       writeLock();
       try {
+        //新版本进行优化dfs.namenode.block.deletion.increment=100
         for (int i = 0; i < BLOCK_DELETION_INCREMENT && iter.hasNext(); i++) {
           blockManager.removeBlock(iter.next());
         }

@@ -1057,6 +1057,7 @@ class BlockReceiver implements Closeable {
           responder.interrupt();
         }
         IOUtils.closeStream(this);
+        //todo 此处为block清理
         cleanupBlock();
       }
       if (responder != null) {

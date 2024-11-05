@@ -1608,6 +1608,7 @@ public class DFSClient implements java.io.Closeable, RemotePeerFactory,
   public boolean delete(String src, boolean recursive) throws IOException {
     checkOpen();
     try (TraceScope ignored = newPathTraceScope("delete", src)) {
+      // 调用namenode
       return namenode.delete(src, recursive);
     } catch (RemoteException re) {
       throw re.unwrapRemoteException(AccessControlException.class,

@@ -165,11 +165,12 @@ public abstract class CachingGetSpaceUsed implements Closeable, GetSpaceUsed {
     public void run() {
       while (spaceUsed.running()) {
         try {
+          //fs.du.interval=10min
           long refreshInterval = spaceUsed.refreshInterval;
-
           if (spaceUsed.jitter > 0) {
             long jitter = spaceUsed.jitter;
             // add/subtract the jitter.
+           // fs.getspaceused.jitterMillis=1min
             refreshInterval +=
                 ThreadLocalRandom.current()
                                  .nextLong(-jitter, jitter);

@@ -1101,7 +1101,7 @@ public class NameNodeRpcServer implements NamenodeProtocols {
 
     boolean ret = false;
     try {
-      //todo 进入次方法
+      //todo 进入此方法
       ret = namesystem.delete(src, recursive, cacheEntry != null);
     } finally {
       RetryCache.setState(cacheEntry, ret);

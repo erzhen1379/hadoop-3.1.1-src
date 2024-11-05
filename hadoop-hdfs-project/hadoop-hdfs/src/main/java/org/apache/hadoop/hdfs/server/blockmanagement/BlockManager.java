@@ -1587,6 +1587,8 @@ public class BlockManager implements BlockStatsMXBean {
       final DatanodeDescriptor node = storage.getDatanodeDescriptor();
       final Block b = getBlockOnStorage(storedBlock, storage);
       if (b != null) {
+        //todo  把块信息加入队列的操作。
+        //等待DN的心跳读取然后下发删除指令给Datanode,定时线程如何真正的删除块呢？这里我们就需要去阅读FsDatasetAsyncDiskService类了
         invalidateBlocks.add(b, node, false);
         if (datanodes != null) {
           datanodes.append(node).append(" ");
@@ -4235,9 +4237,12 @@ public class BlockManager implements BlockStatsMXBean {
     // from the namespace, since the removal of the associated
     // file already removes them from the block map below.
     block.setNumBytes(BlockCommand.NO_ACK);
+     // todo 加入Invalidate队列就意味着删除块，此处是重点
     addToInvalidates(block);
     removeBlockFromMap(block);
     // Remove the block from pendingReconstruction and neededReconstruction
+    // pendingReconstruction是已经生成复制指令，待发送给DN的block队列
+    // neededReconstruction是准备生成复制指令的block队列
     pendingReconstruction.remove(block);
     neededReconstruction.remove(block, LowRedundancyBlocks.LEVEL);
     postponedMisreplicatedBlocks.remove(block);
