@@ -1560,10 +1560,14 @@ public class Job extends JobContextImpl implements JobContext, AutoCloseable {
   public void submit() 
          throws IOException, InterruptedException, ClassNotFoundException {
     ensureState(JobState.DEFINE);
+    //启用new API
     setUseNewAPI();
+    //获取 yarnRunner 客户端
     connect();
+    //获取一个提交器，JobSubmitter
     final JobSubmitter submitter = 
         getJobSubmitter(cluster.getFileSystem(), cluster.getClient());
+    //todo 提交job
     status = ugi.doAs(new PrivilegedExceptionAction<JobStatus>() {
       public JobStatus run() throws IOException, InterruptedException, 
       ClassNotFoundException {
@@ -1580,11 +1584,13 @@ public class Job extends JobContextImpl implements JobContext, AutoCloseable {
    * @return true if the job succeeded
    * @throws IOException thrown if the communication with the 
    *         <code>JobTracker</code> is lost
+   *        todo 提交方法
    */
   public boolean waitForCompletion(boolean verbose
                                    ) throws IOException, InterruptedException,
                                             ClassNotFoundException {
     if (state == JobState.DEFINE) {
+      //todo 提交
       submit();
     }
     if (verbose) {

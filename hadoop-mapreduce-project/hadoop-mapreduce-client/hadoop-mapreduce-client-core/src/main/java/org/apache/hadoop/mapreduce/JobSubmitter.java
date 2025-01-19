@@ -139,7 +139,7 @@ class JobSubmitter {
    * @throws InterruptedException
    * @throws IOException
    */
-  JobStatus submitJobInternal(Job job, Cluster cluster) 
+  JobStatus  submitJobInternal(Job job, Cluster cluster)
   throws ClassNotFoundException, InterruptedException, IOException {
 
     //validate the jobs output specs 
