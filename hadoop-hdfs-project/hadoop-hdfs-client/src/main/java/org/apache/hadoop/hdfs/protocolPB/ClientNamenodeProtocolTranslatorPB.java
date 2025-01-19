@@ -249,6 +249,7 @@ import org.apache.hadoop.util.concurrent.AsyncGet;
 @InterfaceStability.Stable
 public class ClientNamenodeProtocolTranslatorPB implements
     ProtocolMetaInterface, ClientProtocol, Closeable, ProtocolTranslator {
+  //持有一个实现ClientNamenodeProtocolPB接口的rpcProxy
   final private ClientNamenodeProtocolPB rpcProxy;
 
   static final GetServerDefaultsRequestProto VOID_GET_SERVER_DEFAULT_REQUEST =

@@ -95,9 +95,10 @@ public class ProtobufRpcEngine implements RpcEngine {
       InetSocketAddress addr, UserGroupInformation ticket, Configuration conf,
       SocketFactory factory, int rpcTimeout, RetryPolicy connectionRetryPolicy,
       AtomicBoolean fallbackToSimpleAuth) throws IOException {
-
+    //首先构造Invoker对象
     final Invoker invoker = new Invoker(protocol, addr, ticket, conf, factory,
         rpcTimeout, connectionRetryPolicy, fallbackToSimpleAuth);
+    //通过调用proxy.newProxyInstance()获取动态代理对象，并通过ProtocolProxy返回
     return new ProtocolProxy<T>(protocol, (T) Proxy.newProxyInstance(
         protocol.getClassLoader(), new Class[]{protocol}, invoker), false);
   }
@@ -123,6 +124,20 @@ public class ProtobufRpcEngine implements RpcEngine {
     private final String protocolName;
     private AtomicBoolean fallbackToSimpleAuth;
 
+    /**
+     * 1.构造请求头，使用protobuf将请求头序列化，记录rpc是什么方法调用
+     * 2.通过rpc.client 类发送请求头序列化好的请求参数，
+     * 3.是获取相应信息，序列号相应信息并且返回
+     * @param protocol
+     * @param addr
+     * @param ticket
+     * @param conf
+     * @param factory
+     * @param rpcTimeout
+     * @param connectionRetryPolicy
+     * @param fallbackToSimpleAuth
+     * @throws IOException
+     */
     private Invoker(Class<?> protocol, InetSocketAddress addr,
         UserGroupInformation ticket, Configuration conf, SocketFactory factory,
         int rpcTimeout, RetryPolicy connectionRetryPolicy,
@@ -192,7 +207,8 @@ public class ProtobufRpcEngine implements RpcEngine {
       if (LOG.isDebugEnabled()) {
         startTime = Time.now();
       }
-      
+      //todo
+      //pb接口只有2个，RpcController+message
       if (args.length != 2) { // RpcController + Message
         throw new ServiceException(
             "Too many or few parameters for request. Method: ["
@@ -212,7 +228,7 @@ public class ProtobufRpcEngine implements RpcEngine {
       if (tracer != null) {
         traceScope = tracer.newScope(RpcClientUtil.methodToTraceString(method));
       }
-
+      //构建 请求头域，标注在什么接口上调用什么方法
       RequestHeaderProto rpcRequestHeader = constructRpcRequestHeader(method);
       
       if (LOG.isTraceEnabled()) {
@@ -221,10 +237,11 @@ public class ProtobufRpcEngine implements RpcEngine {
             " {" + TextFormat.shortDebugString((Message) args[1]) + "}");
       }
 
-
+       //获取调用请求的参数，例如renameRequestProto
       final Message theRequest = (Message) args[1];
       final RpcWritable.Buffer val;
       try {
+        //调用RPC.Client发送请求
         val = (RpcWritable.Buffer) client.call(RPC.RpcKind.RPC_PROTOCOL_BUFFER,
             new RpcProtobufRequest(rpcRequestHeader, theRequest), remoteId,
             fallbackToSimpleAuth);
@@ -254,8 +271,10 @@ public class ProtobufRpcEngine implements RpcEngine {
             = Client.getAsyncRpcResponse();
         final AsyncGet<Message, Exception> asyncGet
             = new AsyncGet<Message, Exception>() {
+          //
           @Override
           public Message get(long timeout, TimeUnit unit) throws Exception {
+            //todo 进入当前方法
             return getReturnMessage(method, arr.get(timeout, unit));
           }
 
@@ -275,6 +294,7 @@ public class ProtobufRpcEngine implements RpcEngine {
         final RpcWritable.Buffer buf) throws ServiceException {
       Message prototype = null;
       try {
+        //获取返回参数类型，
         prototype = getReturnProtoType(method);
       } catch (Exception e) {
         throw new ServiceException(e);
@@ -292,6 +312,7 @@ public class ProtobufRpcEngine implements RpcEngine {
       } catch (Throwable e) {
         throw new ServiceException(e);
       }
+      //返回结果
       return returnMessage;
     }
 

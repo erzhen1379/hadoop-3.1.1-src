@@ -1069,6 +1069,7 @@ public abstract class Server {
       public void run() {
         LOG.info("Starting " + Thread.currentThread().getName());
         try {
+          //todo 进入当前方法
           doRunLoop();
         } finally {
           try {
@@ -1085,25 +1086,28 @@ public abstract class Server {
           try {
             // consume as many connections as currently queued to avoid
             // unbridled acceptance of connections that starves the select
+            //获取大小
             int size = pendingConnections.size();
             for (int i=size; i>0; i--) {
               Connection conn = pendingConnections.take();
               conn.channel.register(readSelector, SelectionKey.OP_READ, conn);
             }
             readSelector.select();
-
+            //在当前的readSelector 上等待可读事件，也就是有客户端rpc请求到达
             Iterator<SelectionKey> iter = readSelector.selectedKeys().iterator();
             while (iter.hasNext()) {
               key = iter.next();
               iter.remove();
               try {
                 if (key.isReadable()) {
+                  //todo 有可读事件时，调用doRead() 方法处理
                   doRead(key);
                 }
               } catch (CancelledKeyException cke) {
                 // something else closed the connection, ex. responder or
                 // the listener doing an idle scan.  ignore it and let them
-                // clean up.
+                // clean up
+                //出现异常，记录日志中
                 LOG.info(Thread.currentThread().getName() +
                     ": connection aborted from " + key.attachment());
               }
@@ -1149,16 +1153,19 @@ public abstract class Server {
       LOG.info(Thread.currentThread().getName() + ": starting");
       SERVER.set(Server.this);
       connectionManager.startIdleScan();
+      //todo 监听数据
       while (running) {
         SelectionKey key = null;
         try {
           getSelector().select();
+          //循环判断是否有新的链接建立请求
           Iterator<SelectionKey> iter = getSelector().selectedKeys().iterator();
           while (iter.hasNext()) {
             key = iter.next();
             iter.remove();
             try {
               if (key.isValid()) {
+                //todo 如果有，则调用doAccept() 方法响应
                 if (key.isAcceptable())
                   doAccept(key);
               }
@@ -1170,11 +1177,13 @@ public abstract class Server {
           // we can run out of memory if we have too many threads
           // log the event and sleep for a minute and give 
           // some thread(s) a chance to finish
+          //可能会出现oom情况
           LOG.warn("Out of Memory in server select", e);
           closeCurrentConnection(key, e);
           connectionManager.closeIdle(true);
           try { Thread.sleep(60000); } catch (Exception ie) {}
         } catch (Exception e) {
+          //捕获其他异常，也关闭当前链接
           closeCurrentConnection(key, e);
         }
       }
@@ -1211,14 +1220,17 @@ public abstract class Server {
     
     void doAccept(SelectionKey key) throws InterruptedException, IOException,  OutOfMemoryError {
       ServerSocketChannel server = (ServerSocketChannel) key.channel();
+      //接收请求，建立链接
       SocketChannel channel;
       while ((channel = server.accept()) != null) {
 
         channel.configureBlocking(false);
         channel.socket().setTcpNoDelay(tcpNoDelay);
         channel.socket().setKeepAlive(true);
-        
+        //从read线程池中取出一个Reader线程
         Reader reader = getReader();
+        //todo 注册IO读事件
+        //构造Connection对象，添加readkey的附件传给Reader对象
         Connection c = connectionManager.register(channel);
         // If the connectionManager can't take it, close the connection.
         if (c == null) {
@@ -1235,6 +1247,7 @@ public abstract class Server {
 
     void doRead(SelectionKey key) throws InterruptedException {
       int count;
+      //通过SelectionKey 获取Connection对象
       Connection c = (Connection)key.attachment();
       if (c == null) {
         return;  
@@ -1242,6 +1255,7 @@ public abstract class Server {
       c.setLastContact(Time.now());
       
       try {
+        //todo 进入当前方法，调用Connection.readAndProcess() 处理读取请求
         count = c.readAndProcess();
       } catch (InterruptedException ieo) {
         LOG.info(Thread.currentThread().getName() + ": readAndProcess caught InterruptedException", ieo);
@@ -2102,6 +2116,7 @@ public abstract class Server {
           ByteBuffer requestData = data;
           data = null; // null out in case processOneRpc throws.
           boolean isHeaderRead = connectionContextRead;
+          //todo 进入当前方法
           processOneRpc(requestData);
           // the last rpc-request we processed could have simply been the
           // connectionContext; if so continue to read the first RPC.
@@ -2351,14 +2366,16 @@ public abstract class Server {
           LOG.debug(" got #" + callId);
         }
         checkRpcHeaders(header);
-
+        //从rpc请求头域中提取出callId
         if (callId < 0) { // callIds typically used during connection setup
+          //todo 进入当前方法
           processRpcOutOfBandRequest(header, buffer);
         } else if (!connectionContextRead) {
           throw new FatalRpcServerException(
               RpcErrorCodeProto.FATAL_INVALID_RPC_HEADER,
               "Connection context not established");
         } else {
+          //todo 如果RPC请求头正常，则直接调用processRpcRequest处理请求体
           processRpcRequest(header, buffer);
         }
       } catch (RpcServerException rse) {
@@ -2372,9 +2389,11 @@ public abstract class Server {
         // use the wrapped exception if there is one.
         Throwable t = (rse.getCause() != null) ? rse.getCause() : rse;
         final RpcCall call = new RpcCall(this, callId, retry);
+        //设置返回
         setupResponse(call,
             rse.getRpcStatusProto(), rse.getRpcErrorCodeProto(), null,
             t.getClass().getName(), t.getMessage());
+
         sendResponse(call);
       }
     }
@@ -2438,10 +2457,12 @@ public abstract class Server {
       }
       Writable rpcRequest;
       try { //Read the rpc request
+        //读取rpc请求体
         rpcRequest = buffer.newInstance(rpcRequestClass, conf);
       } catch (RpcServerException rse) { // lets tests inject failures.
         throw rse;
       } catch (Throwable t) { // includes runtime exception from newInstance
+        //出现异常，则直接抛出，在上一次捕获异常
         LOG.warn("Unable to read call parameters for client " +
                  getHostAddress() + "on connection protocol " +
             this.protocolName + " for rpcKind " + header.getRpcKind(),  t);
@@ -2473,7 +2494,7 @@ public abstract class Server {
                     .toByteArray())
                 .build();
       }
-
+     //构造Call对象封装RPC请求信息
       RpcCall call = new RpcCall(this, header.getCallId(),
           header.getRetryCount(), rpcRequest,
           ProtoUtil.convert(header.getRpcKind()),
@@ -2633,6 +2654,7 @@ public abstract class Server {
   private void internalQueueCall(Call call)
       throws IOException, InterruptedException {
     try {
+      //todo 将Call对象放入callQueue中，等待hander处理这个call对象
       callQueue.put(call); // queue the call; maybe blocked here
     } catch (CallQueueOverflowException cqe) {
       // If rpc scheduler indicates back off based on performance degradation

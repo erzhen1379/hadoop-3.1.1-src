@@ -348,7 +348,7 @@ public class DFSOutputStream extends FSOutputSummer
       //start 方法启动了DFSOutputStream内部的datastareamer，用于接收要写入的数据包。
       //2进入start方法
       LOG.debug("此处启动datastareamer的start 程序"+src);
-      //重点看这个方法
+      //todo 重点看这个方法
       out.start();
       return out;
     }
