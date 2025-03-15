@@ -1540,6 +1540,7 @@ public abstract class Server {
 
     //
     // Enqueue a response from the application.
+    //todo
     //
     void doRespond(RpcCall call) throws IOException {
       synchronized (call.connection.responseQueue) {
@@ -2457,7 +2458,7 @@ public abstract class Server {
       }
       Writable rpcRequest;
       try { //Read the rpc request
-        //读取rpc请求体
+        //todo 读取rpc请求体
         rpcRequest = buffer.newInstance(rpcRequestClass, conf);
       } catch (RpcServerException rse) { // lets tests inject failures.
         throw rse;
@@ -2494,7 +2495,7 @@ public abstract class Server {
                     .toByteArray())
                 .build();
       }
-     //构造Call对象封装RPC请求信息
+     //todo 构造Call对象封装RPC请求信息
       RpcCall call = new RpcCall(this, header.getCallId(),
           header.getRetryCount(), rpcRequest,
           ProtoUtil.convert(header.getRpcKind()),
@@ -2504,6 +2505,7 @@ public abstract class Server {
       call.setPriorityLevel(callQueue.getPriorityLevel(call));
 
       try {
+        //todo 放入call队列中，等待下游handler处理
         internalQueueCall(call);
       } catch (RpcServerException rse) {
         throw rse;
@@ -2678,7 +2680,8 @@ public abstract class Server {
 
     @Override
     public void run() {
-      //RPC.Server启动后持续监听来自客户端的RPC请求并放入callQueue队列中，handler线程则不断从callQueue中提取RPC请求来执行具体的处理逻辑。
+      //todo
+      //  RPC.Server启动后持续监听来自客户端的RPC请求并放入callQueue队列中，handler线程则不断从callQueue中提取RPC请求来执行具体的处理逻辑。
       LOG.debug(Thread.currentThread().getName() + ": starting");
       SERVER.set(Server.this);
       while (running) {

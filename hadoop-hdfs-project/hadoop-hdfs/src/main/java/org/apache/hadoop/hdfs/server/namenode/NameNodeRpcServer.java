@@ -268,17 +268,20 @@ public class NameNodeRpcServer implements NamenodeProtocols {
     this.namesystem = nn.getNamesystem();
     this.retryCache = namesystem.getRetryCache();
     this.metrics = NameNode.getNameNodeMetrics();
-
+    //设置handler数量
     int handlerCount = 
       conf.getInt(DFS_NAMENODE_HANDLER_COUNT_KEY, 
                   DFS_NAMENODE_HANDLER_COUNT_DEFAULT);
-
+  //设置rpc引擎protobuf
     RPC.setProtocolEngine(conf, ClientNamenodeProtocolPB.class,
         ProtobufRpcEngine.class);
-
+     //构造ClientNamenodeProtocolServerSideTranslatorPB对象
+    //这个对象适用于适配clientProtocolPB到ClientPtotocol接口转换
     ClientNamenodeProtocolServerSideTranslatorPB 
        clientProtocolServerTranslator = 
          new ClientNamenodeProtocolServerSideTranslatorPB(this);
+    //构造BlockingService对象
+    //这个对象用于Server提出请求前转到clientProtocolServerTranslator
      BlockingService clientNNPbService = ClientNamenodeProtocol.
          newReflectiveBlockingService(clientProtocolServerTranslator);
 
@@ -338,7 +341,7 @@ public class NameNodeRpcServer implements NamenodeProtocols {
         new TraceAdminProtocolServerSideTranslatorPB(this);
     BlockingService traceAdminService = TraceAdminService
         .newReflectiveBlockingService(traceAdminXlator);
-
+     //初始化serviceRpcAddr对象，并配置ClientPotocolPB的响应类为
     InetSocketAddress serviceRpcAddr = nn.getServiceRpcServerAddress(conf);
     if (serviceRpcAddr != null) {
       String bindHost = nn.getServiceRpcServerBindHost(conf);
@@ -347,7 +350,7 @@ public class NameNodeRpcServer implements NamenodeProtocols {
       }
       LOG.info("Service RPC server is binding to " + bindHost + ":" +
           serviceRpcAddr.getPort());
-
+       //service handler
       int serviceHandlerCount =
         conf.getInt(DFS_NAMENODE_SERVICE_HANDLER_COUNT_KEY,
                     DFS_NAMENODE_SERVICE_HANDLER_COUNT_DEFAULT);
@@ -425,7 +428,7 @@ public class NameNodeRpcServer implements NamenodeProtocols {
           .setVerbose(false)
           .setSecretManager(namesystem.getDelegationTokenSecretManager())
           .build();
-
+      //注册NamenodeRPCServer实现的所有的接口
       DFSUtil.addPBProtocol(conf, DatanodeLifelineProtocolPB.class,
           lifelineProtoPbService, lifelineRpcServer);
 
@@ -445,7 +448,7 @@ public class NameNodeRpcServer implements NamenodeProtocols {
       bindHost = rpcAddr.getHostName();
     }
     LOG.info("RPC server is binding to " + bindHost + ":" + rpcAddr.getPort());
-
+    //构造clientRpcServer，用于响应来自于HDFS客户端的RPC请求
     clientRpcServer = new RPC.Builder(conf)
         .setProtocol(
             org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolPB.class)

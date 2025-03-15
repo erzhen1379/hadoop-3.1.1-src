@@ -580,6 +580,7 @@ public class DistributedFileSystem extends FileSystem
     return new FileSystemLinkResolver<HdfsDataOutputStream>() {
       @Override
       public HdfsDataOutputStream doCall(final Path p) throws IOException {
+        //todo 進入當前方法
         final DFSOutputStream out = dfs.create(getPathName(f), permission,
             flag, true, replication, blockSize, progress, bufferSize,
             checksumOpt, favoredNodes, ecPolicyName);
